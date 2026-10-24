@@ -1,7 +1,1 @@
-VERSIONE V2 - DESCRIZIONE ARTICOLO
-
-Carica tutti i file di questa cartella nella radice del repository GitHub, sostituendo i precedenti. Cloudflare Pages pubblichera automaticamente la nuova versione.
-
-Il nome del prodotto viene estratto dalle righe della descrizione sulla pagina con i codici a barre. La descrizione puo occupare fino a 3 righe.
-
-Verifica su iPhone la leggibilita del codice a barre prima dell’uso.
+VERSIONE 3: Descrizione massimo 2 righe, codice e quantita a sinistra, commessa sulla stessa riga a destra, codice a barre piu alto. Sostituire i file nella root GitHub e attendere il deploy Cloudflare. Cache PWA aggiornata a v3. Verificare la scansione prima di uso operativo.

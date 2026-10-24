@@ -65,10 +65,10 @@ async function generatePdf(){
     const font=await output.embedFont(StandardFonts.HelveticaBold);
     const W=62*MM,H=25*MM;
     // Wrap text by actual embedded-font width, avoiding truncation.
-    function wrapName(name,maxWidth,maxLines=3){
+    function wrapName(name,maxWidth,maxLines=2){
       const words=name.split(/\s+/), lines=[];
-      let size=7.2;
-      for(;size>=5.0;size-=0.2){
+      let size=7.6;
+      for(;size>=5.2;size-=0.2){
         lines.length=0;let current='';
         for(const word of words){
           const candidate=current?current+' '+word:word;
@@ -100,15 +100,24 @@ async function generatePdf(){
       const img=await output.embedPng(await (await fetch(cut.toDataURL('image/png'))).arrayBuffer());
       const page=output.addPage([W,H]);
       page.drawRectangle({x:.7*MM,y:.7*MM,width:60.6*MM,height:23.6*MM,borderColor:rgb(.1,.1,.1),borderWidth:.45});
-      const nameLayout=wrapName(row.name,57*MM,3);
-      const lineStep=2.5*MM;
-      nameLayout.lines.forEach((line,i)=>page.drawText(line,{x:2.5*MM,y:H-(3.6*MM+i*lineStep),font,size:nameLayout.size,color:rgb(0,0,0)}));
-      const nameBottom=3.6+(nameLayout.lines.length-1)*2.5;
-      const detailTop=nameBottom+3.3;
-      page.drawText(`${row.code} x ${row.qty} PZ`,{x:2.5*MM,y:H-detailTop*MM,font,size:8,color:rgb(0,0,0)});
-      page.drawText(`Com ${row.comm}`,{x:2.5*MM,y:H-(detailTop+2.8)*MM,font,size:7.5,color:rgb(0,0,0)});
+      // Compact layout: product name at top, article/quantity and commessa on ONE row.
+      const nameLayout=wrapName(row.name,57*MM,2);
+      const nameLineStep=2.8*MM;
+      nameLayout.lines.forEach((line,i)=>page.drawText(line,{
+        x:2.5*MM,y:H-(3.6*MM+i*nameLineStep),font,size:nameLayout.size,color:rgb(0,0,0)
+      }));
+      const detailTop=3.6+(nameLayout.lines.length-1)*2.8+3.6;
+      const leftText=`${row.code} x ${row.qty} PZ`;
+      const rightText=`Com ${row.comm}`;
+      const leftX=2.5*MM, rightEdge=59.5*MM;
+      let leftSize=8.2, rightSize=7.8;
+      // Keep a visible gap between the two fields even for longer product codes.
+      while(leftSize>6.0 && font.widthOfTextAtSize(leftText,leftSize)+font.widthOfTextAtSize(rightText,rightSize)>55*MM){leftSize-=0.2;}
+      if(font.widthOfTextAtSize(leftText,leftSize)+font.widthOfTextAtSize(rightText,rightSize)>55*MM)throw new Error(`Riga articolo troppo lunga: ${row.code}`);
+      page.drawText(leftText,{x:leftX,y:H-detailTop*MM,font,size:leftSize,color:rgb(0,0,0)});
+      page.drawText(rightText,{x:rightEdge-font.widthOfTextAtSize(rightText,rightSize),y:H-detailTop*MM,font,size:rightSize,color:rgb(0,0,0)});
       // Barcode occupies the lower area, with an adequate quiet zone.
-      const barcodeTop=detailTop+3.5;
+      const barcodeTop=detailTop+1.9;
       const barcodeHeight=25-barcodeTop-1.8;
       if(barcodeHeight<5)throw new Error(`Spazio insufficiente per codice a barre: ${row.code}`);
       page.drawImage(img,{x:2.5*MM,y:1.8*MM,width:55*MM,height:barcodeHeight*MM});
