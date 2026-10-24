@@ -41,7 +41,18 @@ async function readOrder(file) {
       if(!qtext||!comm)continue;
       const qty=Number(qtext.replace(',','.'));
       if(!Number.isInteger(qty)||qty<1)throw new Error(`Quantità non valida per ${code.str}`);
-      found.push({code:code.str,qty,comm,pageNum:p,top:code.y, nextY});
+      // Description may span several lines. Read only the description column,
+      // from the product row to the quantity/commessa rows, excluding headings.
+      const descriptionWords=words.filter(w=>w.x>=118&&w.x<320&&w.y>=code.y-4&&w.y<Math.min(code.y+31,nextY-5));
+      const lines=[];
+      for(const word of descriptionWords.sort((a,b)=>a.y-b.y||a.x-b.x)){
+        let line=lines.find(line=>Math.abs(line.y-word.y)<4);
+        if(!line){line={y:word.y,words:[]};lines.push(line);}
+        line.words.push(word);
+      }
+      const name=lines.sort((a,b)=>a.y-b.y).map(line=>line.words.sort((a,b)=>a.x-b.x).map(w=>w.str).join(' ')).join(' ').replace(/\s+/g,' ').trim();
+      if(!name)throw new Error(`Descrizione mancante per ${code.str}`);
+      found.push({code:code.str,name,qty,comm,pageNum:p,top:code.y, nextY});
     }
   }
   if(!found.length)throw new Error('Nessun articolo riconosciuto. Controlla il modello dell’ordine PDF.');
@@ -53,6 +64,22 @@ async function generatePdf(){
     const output=await PDFDocument.create();
     const font=await output.embedFont(StandardFonts.HelveticaBold);
     const W=62*MM,H=25*MM;
+    // Wrap text by actual embedded-font width, avoiding truncation.
+    function wrapName(name,maxWidth,maxLines=3){
+      const words=name.split(/\s+/), lines=[];
+      let size=7.2;
+      for(;size>=5.0;size-=0.2){
+        lines.length=0;let current='';
+        for(const word of words){
+          const candidate=current?current+' '+word:word;
+          if(font.widthOfTextAtSize(candidate,size)<=maxWidth){current=candidate;}
+          else{if(current)lines.push(current);current=word;}
+        }
+        if(current)lines.push(current);
+        if(lines.length<=maxLines&&lines.every(t=>font.widthOfTextAtSize(t,size)<=maxWidth))return {lines:[...lines],size};
+      }
+      throw new Error(`Descrizione troppo lunga: ${name}`);
+    }
     const cache=new Map();
     for(const row of articles){
       let pageCanvas=cache.get(row.pageNum);
@@ -73,9 +100,18 @@ async function generatePdf(){
       const img=await output.embedPng(await (await fetch(cut.toDataURL('image/png'))).arrayBuffer());
       const page=output.addPage([W,H]);
       page.drawRectangle({x:.7*MM,y:.7*MM,width:60.6*MM,height:23.6*MM,borderColor:rgb(.1,.1,.1),borderWidth:.45});
-      page.drawText(`${row.code} x ${row.qty} PZ`,{x:2.5*MM,y:H-5.5*MM,font,size:10,color:rgb(0,0,0)});
-      page.drawText(`Com ${row.comm}`,{x:2.5*MM,y:H-10*MM,font,size:9,color:rgb(0,0,0)});
-      page.drawImage(img,{x:2.5*MM,y:2*MM,width:55*MM,height:11.5*MM});
+      const nameLayout=wrapName(row.name,57*MM,3);
+      const lineStep=2.5*MM;
+      nameLayout.lines.forEach((line,i)=>page.drawText(line,{x:2.5*MM,y:H-(3.6*MM+i*lineStep),font,size:nameLayout.size,color:rgb(0,0,0)}));
+      const nameBottom=3.6+(nameLayout.lines.length-1)*2.5;
+      const detailTop=nameBottom+3.3;
+      page.drawText(`${row.code} x ${row.qty} PZ`,{x:2.5*MM,y:H-detailTop*MM,font,size:8,color:rgb(0,0,0)});
+      page.drawText(`Com ${row.comm}`,{x:2.5*MM,y:H-(detailTop+2.8)*MM,font,size:7.5,color:rgb(0,0,0)});
+      // Barcode occupies the lower area, with an adequate quiet zone.
+      const barcodeTop=detailTop+3.5;
+      const barcodeHeight=25-barcodeTop-1.8;
+      if(barcodeHeight<5)throw new Error(`Spazio insufficiente per codice a barre: ${row.code}`);
+      page.drawImage(img,{x:2.5*MM,y:1.8*MM,width:55*MM,height:barcodeHeight*MM});
     }
     const bytes=await output.save();const blob=new Blob([bytes],{type:'application/pdf'});
     const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x25.pdf';document.body.appendChild(a);a.click();a.remove();
@@ -89,7 +125,7 @@ $('pdfFile').addEventListener('change',async(e)=>{
   status('Analisi dell’ordine in corso…');
   try{
     articles=await readOrder(file);
-    $('articles').innerHTML=articles.map(row=>`<div class="row"><div><strong>${escapeHtml(row.code)}</strong><div class="small">Quantità: ${row.qty} PZ · Commessa: ${escapeHtml(row.comm)}</div></div><span class="ok">✓</span></div>`).join('');
+    $('articles').innerHTML=articles.map(row=>`<div class="row"><div><strong>${escapeHtml(row.code)}</strong><div class="small">${escapeHtml(row.name)}</div><div class="small">Quantità: ${row.qty} PZ · Commessa: ${escapeHtml(row.comm)}</div></div><span class="ok">✓</span></div>`).join('');
     $('results').classList.remove('hidden');$('generate').disabled=false;status(`${articles.length} articoli trovati in ${sourcePdf.numPages} pagine.`);
   }catch(e){console.error(e);status(`Errore: ${e.message}`,true);}
 });
