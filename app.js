@@ -63,7 +63,7 @@ async function generatePdf(){
   try {
     const output=await PDFDocument.create();
     const font=await output.embedFont(StandardFonts.HelveticaBold);
-    const W=62*MM,H=25*MM;
+    const W=62*MM,H=29*MM;
     // Wrap text by actual embedded-font width, avoiding truncation.
     function wrapName(name,maxWidth,maxLines=2){
       const words=name.split(/\s+/), lines=[];
@@ -99,7 +99,6 @@ async function generatePdf(){
       ctx.drawImage(pageCanvas,38*4,y1*4,227*4,(y2-y1)*4,0,0,cut.width,cut.height);
       const img=await output.embedPng(await (await fetch(cut.toDataURL('image/png'))).arrayBuffer());
       const page=output.addPage([W,H]);
-      page.drawRectangle({x:.7*MM,y:.7*MM,width:60.6*MM,height:23.6*MM,borderColor:rgb(.1,.1,.1),borderWidth:.45});
       // Compact layout: product name at top, article/quantity and commessa on ONE row.
       const nameLayout=wrapName(row.name,57*MM,2);
       const nameLineStep=2.8*MM;
@@ -118,12 +117,12 @@ async function generatePdf(){
       page.drawText(rightText,{x:rightEdge-font.widthOfTextAtSize(rightText,rightSize),y:H-detailTop*MM,font,size:rightSize,color:rgb(0,0,0)});
       // Barcode occupies the lower area, with an adequate quiet zone.
       const barcodeTop=detailTop+1.9;
-      const barcodeHeight=25-barcodeTop-1.8;
+      const barcodeHeight=29-barcodeTop-1.8;
       if(barcodeHeight<5)throw new Error(`Spazio insufficiente per codice a barre: ${row.code}`);
       page.drawImage(img,{x:2.5*MM,y:1.8*MM,width:55*MM,height:barcodeHeight*MM});
     }
     const bytes=await output.save();const blob=new Blob([bytes],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x25.pdf';document.body.appendChild(a);a.click();a.remove();
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x29.pdf';document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),30000);
     status(`Completato — ${articles.length} etichette generate.`);
   } catch(e){console.error(e);status(`Errore: ${e.message}`,true);} finally {$('generate').disabled=false;}

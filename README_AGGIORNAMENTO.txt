@@ -1,1 +1,1 @@
-VERSIONE 3: Descrizione massimo 2 righe, codice e quantita a sinistra, commessa sulla stessa riga a destra, codice a barre piu alto. Sostituire i file nella root GitHub e attendere il deploy Cloudflare. Cache PWA aggiornata a v3. Verificare la scansione prima di uso operativo.
+Versione V4: formato 62 x 29 mm; bordo rettangolare rimosso. Sostituire i file nel repository GitHub e attendere il deploy di Cloudflare Pages. In Safari, ricaricare la pagina se si vede la versione precedente.
