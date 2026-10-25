@@ -1,1 +1,1 @@
-Versione V4: formato 62 x 29 mm; bordo rettangolare rimosso. Sostituire i file nel repository GitHub e attendere il deploy di Cloudflare Pages. In Safari, ricaricare la pagina se si vede la versione precedente.
+V5 - 62 x 29 mm, senza bordo. Codice a barre sempre 42 x 11 mm, con margine inferiore 4 mm e margine sinistro 3 mm. Sostituire tutti i file su GitHub.

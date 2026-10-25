@@ -115,14 +115,18 @@ async function generatePdf(){
       if(font.widthOfTextAtSize(leftText,leftSize)+font.widthOfTextAtSize(rightText,rightSize)>55*MM)throw new Error(`Riga articolo troppo lunga: ${row.code}`);
       page.drawText(leftText,{x:leftX,y:H-detailTop*MM,font,size:leftSize,color:rgb(0,0,0)});
       page.drawText(rightText,{x:rightEdge-font.widthOfTextAtSize(rightText,rightSize),y:H-detailTop*MM,font,size:rightSize,color:rgb(0,0,0)});
-      // Barcode occupies the lower area, with an adequate quiet zone.
-      const barcodeTop=detailTop+1.9;
-      const barcodeHeight=29-barcodeTop-1.8;
-      if(barcodeHeight<5)throw new Error(`Spazio insufficiente per codice a barre: ${row.code}`);
-      page.drawImage(img,{x:2.5*MM,y:1.8*MM,width:55*MM,height:barcodeHeight*MM});
+      // Fixed barcode dimensions for EVERY label; never stretch to fill available space.
+      // Keep generous white space on the right and below for thermal printers.
+      const barcodeWidth=42;   // mm
+      const barcodeHeight=11;  // mm
+      const barcodeX=3;       // mm from left
+      const barcodeBottom=4;  // mm from bottom
+      const barcodeTop=29-barcodeBottom-barcodeHeight;
+      if(barcodeTop<detailTop+1.2)throw new Error(`Spazio insufficiente per codice a barre: ${row.code}`);
+      page.drawImage(img,{x:barcodeX*MM,y:barcodeBottom*MM,width:barcodeWidth*MM,height:barcodeHeight*MM});
     }
     const bytes=await output.save();const blob=new Blob([bytes],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x29.pdf';document.body.appendChild(a);a.click();a.remove();
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x29_V5.pdf';document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),30000);
     status(`Completato — ${articles.length} etichette generate.`);
   } catch(e){console.error(e);status(`Errore: ${e.message}`,true);} finally {$('generate').disabled=false;}
