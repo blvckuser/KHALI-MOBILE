@@ -1,1 +1,1 @@
-V5 - 62 x 29 mm, senza bordo. Codice a barre sempre 42 x 11 mm, con margine inferiore 4 mm e margine sinistro 3 mm. Sostituire tutti i file su GitHub.
+V6 - 62 x 29 mm, senza bordo. Margine superiore del titolo aumentato di 1,8 mm; codice a barre fisso 42 x 11 mm. Sostituire tutti i file su GitHub.

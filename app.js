@@ -103,9 +103,9 @@ async function generatePdf(){
       const nameLayout=wrapName(row.name,57*MM,2);
       const nameLineStep=2.8*MM;
       nameLayout.lines.forEach((line,i)=>page.drawText(line,{
-        x:2.5*MM,y:H-(3.6*MM+i*nameLineStep),font,size:nameLayout.size,color:rgb(0,0,0)
+        x:2.5*MM,y:H-(5.4*MM+i*nameLineStep),font,size:nameLayout.size,color:rgb(0,0,0)
       }));
-      const detailTop=3.6+(nameLayout.lines.length-1)*2.8+3.6;
+      const detailTop=5.4+(nameLayout.lines.length-1)*2.8+3.6;
       const leftText=`${row.code} x ${row.qty} PZ`;
       const rightText=`Com ${row.comm}`;
       const leftX=2.5*MM, rightEdge=59.5*MM;
@@ -126,7 +126,7 @@ async function generatePdf(){
       page.drawImage(img,{x:barcodeX*MM,y:barcodeBottom*MM,width:barcodeWidth*MM,height:barcodeHeight*MM});
     }
     const bytes=await output.save();const blob=new Blob([bytes],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x29_V5.pdf';document.body.appendChild(a);a.click();a.remove();
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x29_V6.pdf';document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),30000);
     status(`Completato — ${articles.length} etichette generate.`);
   } catch(e){console.error(e);status(`Errore: ${e.message}`,true);} finally {$('generate').disabled=false;}

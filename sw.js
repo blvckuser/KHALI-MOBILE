@@ -1,4 +1,4 @@
-const CACHE='etichette-v5-62x29-fixed-barcode';
+const CACHE='etichette-v6-62x29-top-margin';
 const ASSETS=['./','./index.html','./app.js','./manifest.webmanifest'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
