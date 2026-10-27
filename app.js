@@ -143,12 +143,19 @@ $('pdfFile').addEventListener('change',async(e)=>{
   status('Analisi dell’ordine in corso…');
   try{
     articles=await readOrder(file);
-    $('articles').innerHTML=articles.map((row,i)=>`<div class="row"><div style="width:100%"><strong>Articolo ${i+1}</strong><div class="edit-grid"><label class="wide">Descrizione prodotto<input data-index="${i}" data-field="name" value="${escapeHtml(row.name)}" autocomplete="off"></label><label>Codice articolo<input data-index="${i}" data-field="code" value="${escapeHtml(row.code)}" autocomplete="off"></label><label>Quantità (PZ)<input data-index="${i}" data-field="qty" type="number" min="1" step="1" value="${row.qty}" inputmode="numeric"></label><label class="wide">Commessa interna<input data-index="${i}" data-field="comm" value="${escapeHtml(row.comm)}" autocomplete="off"></label></div></div></div>`).join('');
-    $('articles').querySelectorAll('input[data-index]').forEach(input=>input.addEventListener('input',()=>{
-      const i=Number(input.dataset.index), field=input.dataset.field;
-      if(field==='qty') articles[i][field]=input.value;
-      else articles[i][field]=input.value;
-    }));
+    const renderArticles=()=>{
+      $('articles').innerHTML=articles.map((row,i)=>`<div class="article-card" data-card="${i}"><div class="article-head"><div class="article-title">Articolo ${i+1}</div><button type="button" class="edit-button" data-edit="${i}" aria-expanded="false">✎ Modifica</button></div><div class="article-preview"><strong>${escapeHtml(row.name)}</strong><br>${escapeHtml(row.code)} · ${escapeHtml(row.qty)} PZ · Commessa ${escapeHtml(row.comm)}</div><div class="edit-panel hidden" id="edit-panel-${i}"><div class="edit-grid"><label class="wide">Descrizione prodotto<input data-index="${i}" data-field="name" value="${escapeHtml(row.name)}" autocomplete="off"></label><label>Codice articolo<input data-index="${i}" data-field="code" value="${escapeHtml(row.code)}" autocomplete="off"></label><label>Quantità (PZ)<input data-index="${i}" data-field="qty" type="number" min="1" step="1" value="${escapeHtml(row.qty)}" inputmode="numeric"></label><label class="wide">Commessa interna<input data-index="${i}" data-field="comm" value="${escapeHtml(row.comm)}" autocomplete="off"></label></div><button type="button" class="save-edit" data-save="${i}">Salva modifiche</button></div></div>`).join('');
+      $('articles').querySelectorAll('button[data-edit]').forEach(button=>button.addEventListener('click',()=>{
+        const i=Number(button.dataset.edit), panel=$(`edit-panel-${i}`), opening=panel.classList.contains('hidden');
+        panel.classList.toggle('hidden',!opening);button.textContent=opening?'Chiudi':'✎ Modifica';button.setAttribute('aria-expanded',String(opening));
+      }));
+      $('articles').querySelectorAll('button[data-save]').forEach(button=>button.addEventListener('click',()=>{
+        const i=Number(button.dataset.save), card=$(`articles`).querySelector(`[data-card="${i}"]`);
+        card.querySelectorAll('input[data-index]').forEach(input=>{const field=input.dataset.field;articles[i][field]=input.value;});
+        renderArticles();status(`Modifiche salvate per Articolo ${i+1}.`);
+      }));
+    };
+    renderArticles();
     $('results').classList.remove('hidden');$('generate').disabled=false;status(`${articles.length} articoli trovati in ${sourcePdf.numPages} pagine. Puoi correggere i campi prima della generazione.`);
   }catch(e){console.error(e);status(`Errore: ${e.message}`,true);}
 });
