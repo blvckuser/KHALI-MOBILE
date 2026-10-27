@@ -59,6 +59,12 @@ async function readOrder(file) {
   return found;
 }
 async function generatePdf(){
+  for(const row of articles){
+    row.name=String(row.name??'').trim();row.code=String(row.code??'').trim();row.comm=String(row.comm??'').trim();
+    const qty=Number(row.qty);
+    if(!row.name||!row.code||!row.comm||!Number.isInteger(qty)||qty<1){status(`Controlla descrizione, codice, commessa e quantità per ${row.code||'un articolo'}.`,true);return;}
+    row.qty=qty;
+  }
   $('generate').disabled=true;status('Generazione delle etichette…');
   try {
     const output=await PDFDocument.create();
@@ -126,7 +132,7 @@ async function generatePdf(){
       page.drawImage(img,{x:barcodeX*MM,y:barcodeBottom*MM,width:barcodeWidth*MM,height:barcodeHeight*MM});
     }
     const bytes=await output.save();const blob=new Blob([bytes],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x29_V6.pdf';document.body.appendChild(a);a.click();a.remove();
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x29_V7.pdf';document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),30000);
     status(`Completato — ${articles.length} etichette generate.`);
   } catch(e){console.error(e);status(`Errore: ${e.message}`,true);} finally {$('generate').disabled=false;}
@@ -137,8 +143,13 @@ $('pdfFile').addEventListener('change',async(e)=>{
   status('Analisi dell’ordine in corso…');
   try{
     articles=await readOrder(file);
-    $('articles').innerHTML=articles.map(row=>`<div class="row"><div><strong>${escapeHtml(row.code)}</strong><div class="small">${escapeHtml(row.name)}</div><div class="small">Quantità: ${row.qty} PZ · Commessa: ${escapeHtml(row.comm)}</div></div><span class="ok">✓</span></div>`).join('');
-    $('results').classList.remove('hidden');$('generate').disabled=false;status(`${articles.length} articoli trovati in ${sourcePdf.numPages} pagine.`);
+    $('articles').innerHTML=articles.map((row,i)=>`<div class="row"><div style="width:100%"><strong>Articolo ${i+1}</strong><div class="edit-grid"><label class="wide">Descrizione prodotto<input data-index="${i}" data-field="name" value="${escapeHtml(row.name)}" autocomplete="off"></label><label>Codice articolo<input data-index="${i}" data-field="code" value="${escapeHtml(row.code)}" autocomplete="off"></label><label>Quantità (PZ)<input data-index="${i}" data-field="qty" type="number" min="1" step="1" value="${row.qty}" inputmode="numeric"></label><label class="wide">Commessa interna<input data-index="${i}" data-field="comm" value="${escapeHtml(row.comm)}" autocomplete="off"></label></div></div></div>`).join('');
+    $('articles').querySelectorAll('input[data-index]').forEach(input=>input.addEventListener('input',()=>{
+      const i=Number(input.dataset.index), field=input.dataset.field;
+      if(field==='qty') articles[i][field]=input.value;
+      else articles[i][field]=input.value;
+    }));
+    $('results').classList.remove('hidden');$('generate').disabled=false;status(`${articles.length} articoli trovati in ${sourcePdf.numPages} pagine. Puoi correggere i campi prima della generazione.`);
   }catch(e){console.error(e);status(`Errore: ${e.message}`,true);}
 });
 $('generate').addEventListener('click',generatePdf);
