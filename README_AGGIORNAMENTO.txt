@@ -1,5 +1,7 @@
-AGGIORNAMENTO V8
+V9 — DESIGN MINIMALISTA
 
-Aggiunta la pulsante Modifica per articolo dei campi: descrizione prodotto, codice articolo, quantità e commessa interna. Le modifiche sono applicate al PDF generato. Il codice a barre resta quello originale ritagliato dal PDF di origine, anche se si modifica manualmente il codice articolo.
+Mantiene il design semplice della versione precedente e aggiunge un pulsante icona a forma di matita accanto a ogni articolo. Tocca la matita per aprire i campi di modifica; tocca Salva modifiche per confermare.
 
-Per aggiornare: sostituire i file del progetto su GitHub e attendere il deploy Cloudflare Pages. Se la vecchia versione resta visibile, aggiornare la pagina o aprirla in una scheda privata.
+Formato etichette invariato: 62 × 29 mm, senza bordo, codice a barre a dimensione fissa.
+
+Per aggiornare: sostituire i file del sito con quelli di questo archivio e attendere il deploy Cloudflare Pages.
