@@ -29,7 +29,9 @@ async function readOrder(file) {
         words.push({str:word,x:x+Math.max(0,at)*unit,y});
       }
     }
-    const codes=words.filter(w=>/^MU[A-Z0-9]{7,}$/.test(w.str)&&w.x<110&&w.y>200).sort((a,b)=>a.y-b.y);
+    // Accept standard article codes and revision suffixes such as _REV01 or _R01.
+    // Keep the full token so the revision remains visible on the printed label.
+    const codes=words.filter(w=>/^MU[A-Z0-9]{7,}(?:_(?:REV|R)\d+)?$/i.test(w.str)&&w.x<110&&w.y>200).sort((a,b)=>a.y-b.y);
     for(let i=0;i<codes.length;i++){
       const code=codes[i];
       const nextY=codes[i+1]?.y??viewport.height;
@@ -132,7 +134,7 @@ async function generatePdf(){
       page.drawImage(img,{x:barcodeX*MM,y:barcodeBottom*MM,width:barcodeWidth*MM,height:barcodeHeight*MM});
     }
     const bytes=await output.save();const blob=new Blob([bytes],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x29_V7.pdf';document.body.appendChild(a);a.click();a.remove();
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Etichette_62x29_V11.pdf';document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),30000);
     status(`Completato — ${articles.length} etichette generate.`);
   } catch(e){console.error(e);status(`Errore: ${e.message}`,true);} finally {$('generate').disabled=false;}

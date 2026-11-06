@@ -1,7 +1,5 @@
-V9 — DESIGN MINIMALISTA
+V11 — SUPPORTO CODICI ARTICOLO CON REVISIONE
 
-Mantiene il design semplice della versione precedente e aggiunge un pulsante icona a forma di matita accanto a ogni articolo. Tocca la matita per aprire i campi di modifica; tocca Salva modifiche per confermare.
+La rilevazione riconosce ora i codici standard (es. MU20A000265) e i codici con suffisso revisione nei due formati: _REV01 / _REV02 e _R01 / _R02. Il suffisso completo viene conservato nel codice stampato sull’etichetta.
 
-Formato etichette invariato: 62 × 29 mm, senza bordo, codice a barre a dimensione fissa.
-
-Per aggiornare: sostituire i file del sito con quelli di questo archivio e attendere il deploy Cloudflare Pages.
+Nessun’altra modifica alla grafica o alle dimensioni delle etichette: formato 62 × 29 mm, codice a barre originale mantenuto.
