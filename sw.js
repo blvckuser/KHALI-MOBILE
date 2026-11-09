@@ -1,4 +1,4 @@
-const CACHE='etichette-v11-revision-codes-62x29';
+const CACHE='etichette-v12-mu-2mu-codes-62x29';
 const ASSETS=['./','./index.html','./app.js','./manifest.webmanifest'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});

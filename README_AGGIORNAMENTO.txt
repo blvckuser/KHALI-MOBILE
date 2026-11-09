@@ -1,5 +1,10 @@
-V11 — SUPPORTO CODICI ARTICOLO CON REVISIONE
+V12 — RICONOSCIMENTO CODICI MU E 2MU
 
-La rilevazione riconosce ora i codici standard (es. MU20A000265) e i codici con suffisso revisione nei due formati: _REV01 / _REV02 e _R01 / _R02. Il suffisso completo viene conservato nel codice stampato sull’etichetta.
+La rilevazione riconosce ora queste famiglie di codici:
+- MU standard, ad esempio MU20A000265
+- MU corto, ad esempio MU20F001
+- MU con revisione, ad esempio MU20A000185_REV01 o MU20A000185_R01
+- 2MU, ad esempio 2MU00212
 
-Nessun’altra modifica alla grafica o alle dimensioni delle etichette: formato 62 × 29 mm, codice a barre originale mantenuto.
+Il codice completo viene conservato sull’etichetta, inclusi eventuali suffissi _REV01 / _R01.
+Nessuna modifica alla grafica: formato 62 × 29 mm, codice a barre originale mantenuto.
